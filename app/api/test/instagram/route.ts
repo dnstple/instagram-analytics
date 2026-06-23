@@ -1,0 +1,21 @@
+import { NextResponse } from "next/server";
+import { testInstagram } from "@/lib/meta/instagram";
+import { MetaApiError } from "@/lib/meta/types";
+
+export const dynamic = "force-dynamic";
+
+export async function GET() {
+  try {
+    const status = await testInstagram();
+    return NextResponse.json(status);
+  } catch (e) {
+    const err =
+      e instanceof MetaApiError
+        ? e.toJSON()
+        : { message: (e as Error).message, status: 500 };
+    return NextResponse.json(
+      { ok: false, configured: true, detail: err.message, error: err },
+      { status: err.status ?? 500 }
+    );
+  }
+}
