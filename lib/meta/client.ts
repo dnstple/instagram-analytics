@@ -5,7 +5,8 @@ import "server-only";
 import { MetaApiError } from "./types";
 
 export interface MetaConfig {
-  token: string;
+  token: string; // Instagram-login token (organic)
+  adsToken: string; // Facebook token with ads_read (paid) — falls back to token
   version: string;
   instagramAccountId: string;
   adAccountId: string;
@@ -14,6 +15,9 @@ export interface MetaConfig {
 export function getConfig(): MetaConfig {
   return {
     token: process.env.META_ACCESS_TOKEN ?? "",
+    // The Marketing API needs a Facebook user token; the Instagram-login token
+    // can't read ads. Use META_ADS_TOKEN if set, else fall back.
+    adsToken: process.env.META_ADS_TOKEN || process.env.META_ACCESS_TOKEN || "",
     version: process.env.META_API_VERSION || "v21.0",
     instagramAccountId: process.env.INSTAGRAM_ACCOUNT_ID ?? "",
     adAccountId: normaliseAdAccount(process.env.META_AD_ACCOUNT_ID ?? ""),

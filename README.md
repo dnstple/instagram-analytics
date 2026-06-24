@@ -203,15 +203,18 @@ The ads code (`lib/meta/ads.ts`) is built and wired up, just not configured. The
 Marketing API needs a **Facebook** token (the Instagram-login token can't read
 ads), so to switch it on:
 
-1. In Graph API Explorer, generate a **User Access Token** with `ads_read`
-   (and `business_management`).
+1. In Graph API Explorer, switch **User or Page → Get User Access Token**,
+   tick `ads_read` and `business_management`, and **Generate Access Token**
+   (this is a Facebook token, separate from the Instagram-login one).
 2. Find your ad account ID in **Ads Manager** (top-left `act_…` dropdown).
-3. Add `META_AD_ACCOUNT_ID=act_…` to `.env.local`.
+3. Set these env vars (in `.env.local` locally, or in Vercel for the live site):
+   - `META_ADS_TOKEN` = the Facebook token from step 1
+   - `META_AD_ACCOUNT_ID` = `act_…`
+4. Redeploy. The Paid tab now reads Instagram ad placements.
 
-Because organic and paid now use different tokens, the cleanest next step is a
-second env var (e.g. `META_ADS_TOKEN`) for the Facebook ads token — ask and this
-can be wired in. Until then, the Paid tab shows a "not enabled" message and the
-Organic tab is fully functional.
+The app keeps two tokens: `META_ACCESS_TOKEN` (Instagram, organic) and
+`META_ADS_TOKEN` (Facebook, paid). If `META_ADS_TOKEN` is unset the app falls
+back to `META_ACCESS_TOKEN`, which can't read ads — so set it explicitly.
 
 ---
 

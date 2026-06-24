@@ -177,6 +177,8 @@ async function fetchPaid(opts: {
   if (!cfg.adAccountId) {
     throw new MetaApiError("META_AD_ACCOUNT_ID is not set.", { status: 500 });
   }
+  // Marketing API runs on the Facebook Graph host with the ads token.
+  const adCfg = { ...cfg, token: cfg.adsToken };
 
   const rows = await graphGetPaged<RawInsightRow>(
     `${cfg.adAccountId}/insights`,
@@ -187,7 +189,7 @@ async function fetchPaid(opts: {
       date_preset: opts.datePreset ?? "last_30d",
       limit: 100,
     },
-    cfg
+    adCfg
   );
 
   const mapped = rows
@@ -232,19 +234,20 @@ export async function getPaid(opts?: {
 /** Lightweight ad-account connection test for the Settings page. */
 export async function testAds(): Promise<ConnectionStatus> {
   const cfg = getConfig();
-  if (!cfg.token || !cfg.adAccountId) {
+  if (!cfg.adsToken || !cfg.adAccountId) {
     return {
       ok: false,
       configured: false,
       detail:
-        "Missing META_ACCESS_TOKEN or META_AD_ACCOUNT_ID environment variable.",
+        "Paid needs a Facebook token (META_ADS_TOKEN) with ads_read and META_AD_ACCOUNT_ID set.",
     };
   }
+  const adCfg = { ...cfg, token: cfg.adsToken };
   const json = await graphGet<{
     id: string;
     name?: string;
     account_status?: number;
-  }>(cfg.adAccountId, { fields: "id,name,account_status" }, cfg);
+  }>(cfg.adAccountId, { fields: "id,name,account_status" }, adCfg);
   return {
     ok: true,
     configured: true,
